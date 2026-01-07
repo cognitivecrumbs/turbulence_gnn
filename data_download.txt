@@ -1,0 +1,1 @@
+gsutil -m cp -r gs://gresearch/jax-cfd/public_eval_datasets/decaying /data/decaying
