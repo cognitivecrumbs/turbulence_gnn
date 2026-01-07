@@ -1,0 +1,22 @@
+
+# Macros:
+# ==============================================================================
+DENSITY = 1.0
+FORCING_MODULE = @forcings.kolmogorov_forcing
+
+# Parameters for get_physics_specs:
+# ==============================================================================
+get_physics_specs.physics_specs_cls = @NavierStokesPhysicsSpecs
+
+# Parameters for kolmogorov_forcing:
+# ==============================================================================
+kolmogorov_forcing.linear_coefficient = -0.1
+kolmogorov_forcing.scale = 1.0
+kolmogorov_forcing.swap_xy = False
+kolmogorov_forcing.wavenumber = 4
+
+# Parameters for NavierStokesPhysicsSpecs:
+# ==============================================================================
+NavierStokesPhysicsSpecs.density = %DENSITY
+NavierStokesPhysicsSpecs.forcing_module = %FORCING_MODULE
+NavierStokesPhysicsSpecs.viscosity = 0.001
