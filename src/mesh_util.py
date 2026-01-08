@@ -77,7 +77,7 @@ def delanay_mesh_constructor(points:np.ndarray,
                              bidirectional:bool=True,
                              periodic:bool=True,
                              periodic_limits: Optional[np.ndarray] = None
-                             ) -> scipy.spatial.Delaunay:
+                             ) -> tuple:
     if periodic:
         # Create periodic copies of the points
         copies = []
@@ -100,3 +100,73 @@ def delanay_mesh_constructor(points:np.ndarray,
                                                          replace_indices=np.arange(9*len(points))%len(points) if periodic else None)
     
     return delaunay, connectivity, connectivity_periodic, dx, dx_periodic
+
+def cartesian_mesh_contructor(points: np.ndarray,
+                              bidirectional: bool = True,
+                              periodic: bool = True,
+                              dimensions: Optional[tuple] = None) -> tuple:
+    # '''
+    # points = [[x1,y1],[x2,y2],...]
+    # '''
+    # if len(points.shape) == 2:
+    #     sort_inds = np.lexsort((points[:,0],points[:,1]))
+    #     # arrange into (row,col,xy index)
+    #     inds = sort_inds.reshape(dimensions[0],dimensions[1],2)
+
+    #     # points = points[sort_inds]
+    # else:
+    #     inds = []
+    
+    # assert len(points.shape) == 3
+
+    # up_connection = 
+
+    sort_inds = np.lexsort((points[:,0],points[:,1]))
+
+    row_values = sorted(list(set(points[:,0])))
+    col_values = sorted(list(set(points[:,1])))
+
+    nrows,ncols = len(row_values),len(col_values)
+    assert nrows*ncols == points.shape[0]
+
+    connectivity = []
+    connectivity_periodic = [] if periodic else None
+
+    for i in range(nrows):
+        for j in range(ncols):
+            if i != 0 and bidirectional:
+                # up connection
+                connectivity.append([sort_inds[i*ncols+j],sort_inds[(i-1)*ncols+j]])
+            if i != nrows-1:
+                # down connection
+                connectivity.append([sort_inds[i*ncols+j],sort_inds[(i+1)*ncols+j]])
+            if j != 0  and bidirectional:
+                # left connection
+                connectivity.append([sort_inds[i*ncols+j],sort_inds[i*ncols+j-1]])
+            if j != ncols - 1:
+                # right connection
+                connectivity.append([sort_inds[i*ncols+j],sort_inds[i*ncols+j+1]])
+
+    connectivity = np.array(connectivity).T
+    dx = points[connectivity[1,:],:] - points[connectivity[0,:],:]
+
+    dx_periodic = None
+    if periodic:
+        # first row to last row
+        for j in range(ncols):
+            connectivity_periodic.append([sort_inds[j], sort_inds[(nrows-1)*ncols+j]])
+            if bidirectional:
+                # last row to first
+                connectivity_periodic.append([sort_inds[(nrows-1)*ncols+j],sort_inds[j]])
+        for i in range(nrows):
+            # left col to right col
+            connectivity_periodic.append([sort_inds[i*ncols],sort_inds[i*ncols+ncols-1]])
+            if bidirectional:
+                connectivity_periodic.append([sort_inds[i*ncols+ncols-1],sort_inds[i*ncols]])
+
+        connectivity_periodic = np.array(connectivity_periodic).T
+
+        dx_periodic = points[connectivity_periodic[1,:],:] - points[connectivity_periodic[0,:],:]
+    
+
+    return None, connectivity, connectivity_periodic, dx, dx_periodic

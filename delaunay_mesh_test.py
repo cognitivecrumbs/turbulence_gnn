@@ -30,7 +30,6 @@ def delaunay_test():
 
     staggered_points = staggered_points.reshape(-1,2)
 
-    spacing = (x_range[1]-x_range[0])/(rows-1)
     mesh, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = delanay_mesh_constructor(staggered_points,periodic=True,bidirectional=True,periodic_limits=np.array([[x_range[0],x_range[1]],[y_range[0],y_range[1]]]))
 
 
@@ -57,6 +56,54 @@ def delaunay_test():
         assert edge_attr_combined.shape[0] == connectivity_combined.shape[1]
 
 
+
+def cartesian_test():
+    x_range = (0,1)
+    y_range = (0,1)
+
+    rows = 16
+    cols = 16
+
+    points = np.empty((rows,cols,2))
+
+    # consistent spacing
+    dx = (x_range[1]-x_range[0])/(rows)
+    dy = (y_range[1]-y_range[0])/(cols)
+    points[:,:,1] = np.arange(y_range[0],y_range[1]-dy/10,dy)[:,np.newaxis]
+    for i in range(rows):
+        point_row = np.arange(x_range[0],x_range[1]-6*dx/10,dx)
+        points[i,:,0] = point_row 
+
+    points = points.reshape(-1,2)
+
+    # mesh, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = delanay_mesh_constructor(staggered_points,periodic=True,bidirectional=True,periodic_limits=np.array([[x_range[0],x_range[1]],[y_range[0],y_range[1]]]))
+    _, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = cartesian_mesh_contructor(points,periodic=True,bidirectional=True)
+
+
+    # combine connectivities
+    connectivity_combined = np.concatenate([connectivity,connectivity_periodic],axis=1)
+
+    # combine relative position
+    edge_attr_combined = np.concat([edge_attr,edge_attr_periodic],axis=0)
+
+    for i in range(rows*cols):
+        mask_src = connectivity_combined[0] == i
+        mask_dst = connectivity_combined[1] == i
+
+        assert mask_src.sum() == 4
+        assert mask_dst.sum() == 4
+
+        # no repeats
+        assert len(set(connectivity_combined[1,mask_src])) == 4
+        assert len(set(connectivity_combined[0,mask_dst])) == 4
+
+        assert np.all(connectivity_combined[1,mask_src] != i)
+        assert np.all(connectivity_combined[0,mask_dst] != i)
+
+        assert edge_attr_combined.shape[0] == connectivity_combined.shape[1]
+
+
 if __name__ == '__main__':
     delaunay_test()
+    cartesian_test()
     print('test passed')

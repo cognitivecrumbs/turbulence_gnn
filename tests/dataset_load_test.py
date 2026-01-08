@@ -124,16 +124,23 @@ print(ratio[sample_ind,-1].std().values)
 
 dudx = np.gradient(models[data].u,axis=-2)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
 dudy = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
-dvdy = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+dvdy = np.gradient(models[data].v,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 
 # dudx = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
 # dudy = np.gradient(models[data].u,axis=-2)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 # dvdy = np.gradient(models[data].u,axis=-2)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 conv1 = dudx*models[data].u.to_numpy() + dudy*models[data].v.to_numpy()
+
+uu = models[data].u**2
+uv = models[data].u*models[data].v
+duudx = np.gradient(uu,axis=-2)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
+duvdy = np.gradient(uv,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+
+conv1 = duudx + duvdy
 dudt = (models[data].u[sample_ind,1:].to_numpy() - models[data].u[sample_ind,:-1].to_numpy())/(models[data].time[1]-models[data].time[0]).data
 
 ratio = -conv1[sample_ind,:-1]/dudt
-difference = dudt+conv1[:,:-1]
+difference = dudt+conv1[sample_ind,:-1]
 # difference = dudt+conv1[:,1:]
 print(ratio[-1].mean())
 print(ratio[-1].std())
@@ -158,10 +165,10 @@ ax3.hist(-conv1[sample_ind,-1,:,:].flatten(),100)
 # ax3.hist(ratio[-1,:,:].flatten(),100)
 
 ax4 = fig2.add_subplot(414)
-ax4.hist(difference[sample_ind,-1,:,:].flatten(),100)
+ax4.hist(difference[-1,:,:].flatten(),100)
 print('check std')
-print(dudt[sample_ind,-1].std())
-print(difference[sample_ind,-1].std())
+print(dudt[-1].std())
+print(difference[-1].std())
 
 energy = models[data].u.to_numpy()**2 + models[data].v.to_numpy()**2
 plot_energy = energy[sample_ind].reshape(energy.shape[1],np.prod(energy.shape[2:]))
