@@ -69,6 +69,7 @@ decaying_filenames = {
     f'long_eval{r}': f'eval_{r}x{r}_64x64.nc'
     # for r in [64, 128, 256, 512, 1024, 2048]
     for r in [64]
+    # for r in [2048]
 }
 
 models = {}
@@ -84,6 +85,7 @@ models = {}
 
 # for k, v in long_eval_filenames.items():
 #   models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000/{v}', chunks={'time': '100MB'})
+#   # models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000/{v}')
 #   models[k]['vorticity'] = calculate_vorticity(models[k])
 
 for k, v in decaying_filenames.items():
@@ -93,6 +95,7 @@ for k, v in decaying_filenames.items():
 pass
 
 data = 'long_eval64'
+# data = 'long_eval2048'
 # data = 'baseline_64'
 # data = 
 fig = plt.figure()
@@ -149,10 +152,17 @@ divergence = dudx+dvdy
 print('divergence')
 print(np.abs(divergence[sample_ind,-1]).mean())
 print(divergence[sample_ind,-1].std())
+print(np.abs(divergence[sample_ind,-1]).max())
 
+vel_mag = np.sqrt((models[data].u.to_numpy()**2 + models[data].v.to_numpy()**2).mean((2,3)))
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(111)
-ax1.hist(divergence[sample_ind,-1,:,:].flatten(),100)
+ax1.hist((divergence[sample_ind,-1,:,:]/vel_mag[sample_ind,-1]).flatten(),100,histtype='step',range = [-1,1])
+ax1.hist((divergence[sample_ind,0,:,:]/vel_mag[sample_ind,0]).flatten(),100,histtype='step',range = [-1,1])
+ax1.hist((divergence[sample_ind,100,:,:]/vel_mag[sample_ind,100]).flatten(),100,histtype='step',range = [-1,1])
+ax1.hist((divergence[sample_ind,200,:,:]/vel_mag[sample_ind,200]).flatten(),100,histtype='step',range = [-1,1])
+
+ax1.set_title('Divergence histogram')
 
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(411)

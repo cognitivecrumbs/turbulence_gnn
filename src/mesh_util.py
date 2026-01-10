@@ -104,7 +104,7 @@ def delanay_mesh_constructor(points:np.ndarray,
 def cartesian_mesh_contructor(points: np.ndarray,
                               bidirectional: bool = True,
                               periodic: bool = True,
-                              dimensions: Optional[tuple] = None) -> tuple:
+                              periodic_limits: Optional[np.ndarray] = None) -> tuple:
     # '''
     # points = [[x1,y1],[x2,y2],...]
     # '''
@@ -167,6 +167,17 @@ def cartesian_mesh_contructor(points: np.ndarray,
         connectivity_periodic = np.array(connectivity_periodic).T
 
         dx_periodic = points[connectivity_periodic[1,:],:] - points[connectivity_periodic[0,:],:]
+        if bidirectional:
+            dx_periodic[:2*ncols:2,1] -= (periodic_limits[1,1] - periodic_limits[1,0])
+            dx_periodic[1:2*ncols+1:2,1] += (periodic_limits[1,1] - periodic_limits[1,0])
+            dx_periodic[2*ncols::2,0] -= (periodic_limits[0,1] - periodic_limits[0,0])
+            dx_periodic[2*ncols+1::2,0] += (periodic_limits[0,1] - periodic_limits[0,0])
+        else:
+            dx_periodic[:ncols] -= periodic_limits[0]
+            dx_periodic[ncols:] -= periodic_limits[1]
+
+
+        
     
 
     return None, connectivity, connectivity_periodic, dx, dx_periodic

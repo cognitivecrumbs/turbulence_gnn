@@ -55,6 +55,9 @@ def delaunay_test():
 
         assert edge_attr_combined.shape[0] == connectivity_combined.shape[1]
 
+        assert edge_attr_combined[mask_src].sum() == 0
+        assert edge_attr_combined[mask_dst].sum() == 0
+
 
 
 def cartesian_test():
@@ -77,7 +80,7 @@ def cartesian_test():
     points = points.reshape(-1,2)
 
     # mesh, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = delanay_mesh_constructor(staggered_points,periodic=True,bidirectional=True,periodic_limits=np.array([[x_range[0],x_range[1]],[y_range[0],y_range[1]]]))
-    _, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = cartesian_mesh_contructor(points,periodic=True,bidirectional=True)
+    _, connectivity, connectivity_periodic, edge_attr, edge_attr_periodic = cartesian_mesh_contructor(points,periodic=True,bidirectional=True,periodic_limits=np.array([[x_range[0],x_range[1]],[y_range[0],y_range[1]]]))
 
 
     # combine connectivities
@@ -102,6 +105,8 @@ def cartesian_test():
 
         assert edge_attr_combined.shape[0] == connectivity_combined.shape[1]
 
+        assert edge_attr_combined[mask_src].sum() == 0
+        assert edge_attr_combined[mask_dst].sum() == 0
 
 if __name__ == '__main__':
     delaunay_test()
