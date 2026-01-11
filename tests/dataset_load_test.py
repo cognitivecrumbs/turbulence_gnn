@@ -73,10 +73,10 @@ decaying_filenames = {
 }
 
 models = {}
-# for k, v in baseline_filenames.items():
-#   print(f'data/kolmogorov_re_1000_fig1/{v}')
-#   models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
-#   models[k]['vorticity'] = calculate_vorticity(models[k])
+for k, v in baseline_filenames.items():
+  print(f'data/kolmogorov_re_1000_fig1/{v}')
+  models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
+  models[k]['vorticity'] = calculate_vorticity(models[k])
 
 # for k, v in learned_filenames.items():
 #   ds = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
@@ -116,7 +116,9 @@ for i in range(16):
     plt.colorbar(plot) 
 
 
-
+print(models[data].time)
+print(models[data].warmup_time)
+print(models[data].simulation_time)
 sample_ind = -1
 
 conv1 = models[data].u.differentiate('x')*models[data].u + models[data].u.differentiate('y')*models[data].v
@@ -128,6 +130,19 @@ print(ratio[sample_ind,-1].std().values)
 dudx = np.gradient(models[data].u,axis=-2)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
 dudy = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 dvdy = np.gradient(models[data].v,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+
+dudx = (models[data].u.to_numpy() - np.roll(models[data].u,1,axis=-2))/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
+dudy = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+dvdy = (models[data].v.to_numpy() - np.roll(models[data].v,1,axis=-1))/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+
+u = (models[data].u.to_numpy() - np.roll(models[data].u,1,axis=-2))*0.5
+v = (models[data].v.to_numpy() - np.roll(models[data].v,1,axis=-1))*0.5
+
+dudx = np.gradient(u,axis=-2)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
+dvdy = np.gradient(v,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+
+
+# print(dudx)
 
 # dudx = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
 # dudy = np.gradient(models[data].u,axis=-2)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
@@ -150,9 +165,10 @@ print(ratio[-1].std())
 
 divergence = dudx+dvdy
 print('divergence')
-print(np.abs(divergence[sample_ind,-1]).mean())
-print(divergence[sample_ind,-1].std())
-print(np.abs(divergence[sample_ind,-1]).max())
+time_ind = 0
+print(np.abs(divergence[sample_ind,time_ind]).mean())
+print(divergence[sample_ind,time_ind].std())
+print(np.abs(divergence[sample_ind,time_ind]).max())
 
 vel_mag = np.sqrt((models[data].u.to_numpy()**2 + models[data].v.to_numpy()**2).mean((2,3)))
 fig1 = plt.figure()
