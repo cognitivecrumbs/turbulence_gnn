@@ -11,7 +11,6 @@ Original file is located at
 This initial demonstration shows how to use JAX-CFD to simulate decaying turbulence in 2D.
 """
 
-! pip install jax_cfd
 
 import jax
 import jax.numpy as jnp
@@ -53,7 +52,7 @@ step_fn = cfd.funcutils.repeated(
         density=density, viscosity=viscosity, dt=dt, grid=grid),
     steps=inner_steps)
 rollout_fn = jax.jit(cfd.funcutils.trajectory(step_fn, outer_steps))
-# %time _, trajectory = jax.device_get(rollout_fn(v0))
+_, trajectory = jax.device_get(rollout_fn(v0))
 
 # JAX-CFD uses GridVariable objects for input/output. These objects contain:
 #  - array data

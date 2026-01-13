@@ -73,10 +73,10 @@ decaying_filenames = {
 }
 
 models = {}
-for k, v in baseline_filenames.items():
-  print(f'data/kolmogorov_re_1000_fig1/{v}')
-  models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
-  models[k]['vorticity'] = calculate_vorticity(models[k])
+# for k, v in baseline_filenames.items():
+#   print(f'data/kolmogorov_re_1000_fig1/{v}')
+#   models[k] = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
+#   models[k]['vorticity'] = calculate_vorticity(models[k])
 
 # for k, v in learned_filenames.items():
 #   ds = xarray.open_dataset(f'data/kolmogorov_re_1000_fig1/{v}', chunks={'time': '100MB'})
@@ -119,7 +119,7 @@ for i in range(16):
 print(models[data].time)
 print(models[data].warmup_time)
 print(models[data].simulation_time)
-sample_ind = -1
+sample_ind = 0
 
 conv1 = models[data].u.differentiate('x')*models[data].u + models[data].u.differentiate('y')*models[data].v
 dudt = models[data].u.differentiate('time')
@@ -135,11 +135,16 @@ dudx = (models[data].u.to_numpy() - np.roll(models[data].u,1,axis=-2))/np.gradie
 dudy = np.gradient(models[data].u,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 dvdy = (models[data].v.to_numpy() - np.roll(models[data].v,1,axis=-1))/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 
-u = (models[data].u.to_numpy() - np.roll(models[data].u,1,axis=-2))*0.5
-v = (models[data].v.to_numpy() - np.roll(models[data].v,1,axis=-1))*0.5
+u = (models[data].u.to_numpy() + np.roll(models[data].u,1,axis=-2))*0.5
+v = (models[data].v.to_numpy() + np.roll(models[data].v,1,axis=-1))*0.5
+# u = models[data].u.to_numpy()
+# v = models[data].v.to_numpy()
 
 dudx = np.gradient(u,axis=-2)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
 dvdy = np.gradient(v,axis=-1)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
+
+# dudx = (np.roll(u,1,axis=-2)-u)/np.gradient(models[data].x)[np.newaxis,np.newaxis,:,np.newaxis]
+# dvdy = (np.roll(v,1,axis=-1)-v)/np.gradient(models[data].y)[np.newaxis,np.newaxis,np.newaxis,:]
 
 
 # print(dudx)

@@ -120,6 +120,18 @@ class MeshGraphNetGlobal(torch.nn.Module):
 #         self.node = Node(fc_depth,ndim)
 #         self.edge = Edge(fc_depth,ndim)
 
+#     def least_squares_gradient_init()
+#         mask = ij[0] == i
+#         # d = e[ij[0,mask]]
+#         d = e[mask]
+#         w = torch.diag_embed(weighting[mask])
+#         g = d.T@w.T@w@d
+#         # print(g)
+
+#         g_inv = torch.linalg.inv(g)
+#         mat = g_inv@d.T@w.T@w
+#         inv_square_mesh_mat[i] = mat
+
 #     def forward(self, v: torch.Tensor, e: torch.Tensor, ij: torch.Tensor) -> torch.Tensor:
 #         # calculate convective flux
 #         # v = [u,v,p]
@@ -140,6 +152,7 @@ class MeshGraphNetGlobal(torch.nn.Module):
 #         v = self.decoder_node(v)
 
 #         return v + convective_momentum_change # NN based correction to convective fluxes (dissipation and other higher order effects from turbulence and longer time steps)
+
 
 class Node(torch.nn.Module):
     def __init__(self, 

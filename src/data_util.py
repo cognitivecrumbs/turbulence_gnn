@@ -12,6 +12,6 @@ def load_dataset(datset_names: dict,path:str = 'data') -> dict:
     for k, v in datset_names.items():
       dataset[k] = xarray.open_dataset(os.path.join(path,v), chunks={'time': '100MB'})
     #   dataset[k]['vorticity'] = calculate_vorticity(dataset[k])
-      calculate_vorticity(dataset[k])
+      # calculate_vorticity(dataset[k])
     
     return dataset
