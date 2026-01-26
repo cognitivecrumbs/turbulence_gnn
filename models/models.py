@@ -3,6 +3,26 @@ from torch import nn
 from torch_scatter import scatter_sum
 from typing import Optional
 
+# class ResidualBlock(torch.nn.Module):
+#     def __init__(self, 
+#                  ndim: int = 256, 
+#                  activation: nn.modules.activation = nn.ReLU(), 
+#                  dropout_rate: int=0.1, 
+#                  *args, 
+#                  **kwargs) -> None:
+#         super().__init__(*args, **kwargs)
+#         self.layer = nn.Sequential(
+#             nn.Linear(ndim, ndim),
+#             activation,
+#             nn.Linear(ndim, ndim),
+#             activation,
+#             nn.LayerNorm(ndim),
+#             nn.Dropout(dropout_rate)
+#         )
+
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         return x + self.layer(x)
+
 class ResidualBlock(torch.nn.Module):
     def __init__(self, 
                  ndim: int = 256, 
@@ -15,13 +35,15 @@ class ResidualBlock(torch.nn.Module):
             nn.Linear(ndim, ndim),
             activation,
             nn.Linear(ndim, ndim),
-            activation,
             nn.LayerNorm(ndim),
+            activation,
             nn.Dropout(dropout_rate)
         )
+        self.activation = activation
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x + self.layer(x)
+
 
 class MeshGraphNet(torch.nn.Module):
     def __init__(self, 
